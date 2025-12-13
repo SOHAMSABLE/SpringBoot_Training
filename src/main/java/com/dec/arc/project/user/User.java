@@ -1,4 +1,4 @@
-package com.dec.arc.project.User;
+package com.dec.arc.project.user;
 
 import jakarta.persistence.*;
 

@@ -1,13 +1,13 @@
 package com.dec.arc.project.controller;
 
-import com.dec.arc.project.User.User;
-import com.dec.arc.project.dto.UserDTO;
+import com.dec.arc.project.dto.UserPatchDTO;
+import com.dec.arc.project.dto.UserRequestDTO;
+import com.dec.arc.project.dto.UserResponseDTO;
 import com.dec.arc.project.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -16,48 +16,47 @@ public class UserController {
 
     private final UserService userService;
 
-    // Constructor injection (BEST PRACTICE)
     public UserController(UserService userService) {
         this.userService = userService;
     }
+
     @PostMapping
-    public ResponseEntity<User> createUser(@Valid @RequestBody UserDTO dto) {
-        User newUser = userService.createUser(dto);
-        return ResponseEntity.ok(newUser);
+    public ResponseEntity<UserResponseDTO> createUser(
+            @Valid @RequestBody UserRequestDTO dto) {
+
+        return ResponseEntity.ok(userService.createUser(dto));
     }
+
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
-        List<User> users = userService.getAllUsers();
-        return ResponseEntity.ok(users);
+    public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        return userService.getUserById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<UserResponseDTO> getUserById(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getUserById(id));
     }
-    @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(
-            @PathVariable Long id,
-            @Valid @RequestBody UserDTO dto) {
 
-        try {
-            User updated = userService.updateUser(id, dto);
-            return ResponseEntity.ok(updated);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    @PutMapping("/{id}")
+    public ResponseEntity<UserResponseDTO> updateUser(
+            @PathVariable Long id,
+            @Valid @RequestBody UserRequestDTO dto) {
+
+        return ResponseEntity.ok(userService.updateUser(id, dto));
     }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        boolean deleted = userService.deleteUser(id);
-        if (deleted) {
-            return ResponseEntity.noContent().build(); // 204
-        } else {
-            return ResponseEntity.notFound().build(); // 404
-        }
+        return userService.deleteUser(id)
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.notFound().build();
     }
+    @PatchMapping("/{id}")
+    public ResponseEntity<UserResponseDTO> patchUser(
+            @PathVariable Long id,
+            @RequestBody UserPatchDTO dto) {
 
+        return ResponseEntity.ok(userService.patchUser(id, dto));
+    }
 
 }
