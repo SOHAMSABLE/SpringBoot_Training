@@ -1,48 +1,56 @@
 package com.dec.arc.project.service;
 
-import com.dec.arc.project.User.User;
-import com.dec.arc.project.dto.UserDTO;
+import com.dec.arc.project.dto.UserPatchDTO;
+import com.dec.arc.project.dto.UserRequestDTO;
+import com.dec.arc.project.dto.UserResponseDTO;
 import com.dec.arc.project.repository.UserRepository;
+import com.dec.arc.project.user.User;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
 
     private final UserRepository repo;
+    private final ModelMapper mapper;
 
-    // Constructor injection
-    public UserServiceImpl(UserRepository repo) {
+    public UserServiceImpl(UserRepository repo, ModelMapper mapper) {
         this.repo = repo;
+        this.mapper = mapper;
     }
 
     @Override
-    public User createUser(UserDTO dto) {
-        User user = new User(dto.getName(), dto.getEmail());
-        return repo.save(user);
+    public UserResponseDTO createUser(UserRequestDTO dto) {
+        User user = mapper.map(dto, User.class);
+        User saved = repo.save(user);
+        return mapper.map(saved, UserResponseDTO.class);
     }
 
     @Override
-    public List<User> getAllUsers() {
-        return repo.findAll();
+    public List<UserResponseDTO> getAllUsers() {
+        return repo.findAll()
+                .stream()
+                .map(user -> mapper.map(user, UserResponseDTO.class))
+                .toList();
     }
 
     @Override
-    public Optional<User> getUserById(Long id) {
-        return repo.findById(id);
+    public UserResponseDTO getUserById(Long id) {
+        User user = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return mapper.map(user, UserResponseDTO.class);
     }
 
     @Override
-    public User updateUser(Long id, UserDTO dto) {
+    public UserResponseDTO updateUser(Long id, UserRequestDTO dto) {
         User user = repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        user.setName(dto.getName());
-        user.setEmail(dto.getEmail());
+        mapper.map(dto, user); // PATCH-like behavior
 
-        return repo.save(user);
+        return mapper.map(repo.save(user), UserResponseDTO.class);
     }
 
     @Override
@@ -51,4 +59,22 @@ public class UserServiceImpl implements UserService {
         repo.deleteById(id);
         return true;
     }
+    @Override
+    public UserResponseDTO patchUser(Long id, UserPatchDTO dto) {
+
+        User user = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (dto.getName() != null) {
+            user.setName(dto.getName());
+        }
+
+        if (dto.getEmail() != null) {
+            user.setEmail(dto.getEmail());
+        }
+
+        User saved = repo.save(user);
+        return mapper.map(saved, UserResponseDTO.class);
+    }
+
 }
