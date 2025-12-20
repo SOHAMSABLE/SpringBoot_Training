@@ -4,7 +4,7 @@ import jakarta.validation.constraints.Email;
 
 public class UserPatchDTO {
 
-    private String name;
+    private String username;
 
     @Email
     private String email;
@@ -12,11 +12,11 @@ public class UserPatchDTO {
     // getters & setters
 
     public String getName() {
-        return name;
+        return username;
     }
 
     public void setName(String name) {
-        this.name = name;
+        this.username = name;
     }
 
     public String getEmail() {

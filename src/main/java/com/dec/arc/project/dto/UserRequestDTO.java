@@ -6,18 +6,31 @@ import jakarta.validation.constraints.NotBlank;
 public class UserRequestDTO {
 
     @NotBlank
-    private String name;
+    private String username;
+
+    @NotBlank
+    private String password;   // ⭐ REQUIRED
 
     @Email
     @NotBlank
     private String email;
 
-    public String getName() {
-        return name;
+    // ✅ CORRECT GETTERS / SETTERS
+
+    public String getUsername() {
+        return username;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getEmail() {
@@ -27,5 +40,4 @@ public class UserRequestDTO {
     public void setEmail(String email) {
         this.email = email;
     }
-// getters & setters
 }

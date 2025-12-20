@@ -4,27 +4,39 @@ import com.dec.arc.project.dto.UserPatchDTO;
 import com.dec.arc.project.dto.UserRequestDTO;
 import com.dec.arc.project.dto.UserResponseDTO;
 import com.dec.arc.project.repository.UserRepository;
+import com.dec.arc.project.user.Role;
 import com.dec.arc.project.user.User;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl  implements UserService {
 
     private final UserRepository repo;
     private final ModelMapper mapper;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository repo, ModelMapper mapper) {
+    public UserServiceImpl(UserRepository repo, ModelMapper mapper,PasswordEncoder passwordEncoder) {
         this.repo = repo;
         this.mapper = mapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public UserResponseDTO createUser(UserRequestDTO dto) {
+
         User user = mapper.map(dto, User.class);
+
+        // ⭐ HASH PASSWORD
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setRoles(Set.of(Role.ROLE_USER));
+
         User saved = repo.save(user);
+
         return mapper.map(saved, UserResponseDTO.class);
     }
 
@@ -66,7 +78,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (dto.getName() != null) {
-            user.setName(dto.getName());
+            user.setUsername(dto.getName());
         }
 
         if (dto.getEmail() != null) {

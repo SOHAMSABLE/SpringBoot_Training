@@ -28,28 +28,15 @@ public class SecurityConfig {
     }
 
     @Bean
-    public UserDetailsService userDetailsService(PasswordEncoder encoder) {
-        UserDetails user = User.builder()
-                .username("test")
-                .password(encoder.encode("test"))
-                .roles("USER")
-                .build();
-        return new InMemoryUserDetailsManager(user);
-    }
-
-    @Bean
     public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration authenticationConfiguration
+            AuthenticationConfiguration config
     ) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
+        return config.getAuthenticationManager();
     }
 
     @Bean
-    public JwtAuthFilter jwtAuthFilter(
-            JwtUtil jwtUtil,
-            UserDetailsService userDetailsService
-    ) {
-        return new JwtAuthFilter(jwtUtil, userDetailsService);
+    public JwtAuthFilter jwtAuthFilter(JwtUtil jwtUtil) {
+        return new JwtAuthFilter(jwtUtil);
     }
 
     @Bean
@@ -64,7 +51,11 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login").permitAll()
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/users/**")
+                        .hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/admin/**")
+                        .hasRole("ADMIN")
                         .anyRequest().authenticated()
                 );
 

@@ -1,6 +1,7 @@
 package com.dec.arc.project.user;
 
 import jakarta.persistence.*;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -10,34 +11,36 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
+    @Column(nullable = false, unique = true)
+    private String username;
+
+    @Column(nullable = false)
+    private String password;
+
     private String email;
 
-    public User() {}
+    // ⭐ ADD THIS
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Enumerated(EnumType.STRING)
+    @CollectionTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id")
+    )
+    @Column(name = "role")
+    private Set<Role> roles;
 
-    public User(String name, String email) {
-        this.name = name;
-        this.email = email;
-    }
+    // getters/setters
+    public Long getId() { return id; }
 
-    // getters and setters
-    public Long getId() {
-        return id;
-    }
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
 
-    public String getName() {
-        return name;
-    }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    public Set<Role> getRoles() { return roles; } // ⭐ REQUIRED
+    public void setRoles(Set<Role> roles) { this.roles = roles; }
 }
